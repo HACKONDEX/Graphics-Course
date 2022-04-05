@@ -6,141 +6,131 @@
 
 // Include GLFW
 #include <GLFW/glfw3.h>
-GLFWwindow* window;
+
+GLFWwindow *window;
 
 // Include GLM
 #include <glm/glm.hpp>
+
 using namespace glm;
 
 #include <common/shader.hpp>
 
-int main(void) {
+enum Parameters {
+    WindowLength = 1048,
+    WindowWidth = 768,
+};
+
+static void InitializeGLFW() {
     // Initialise GLFW
     if (!glfwInit()) {
-        fprintf( stderr, "Failed to initialize GLFW\n" );
+        fprintf(stderr, "Failed to initialize GLFW\n");
         getchar();
-        return -1;
+        exit(-1);
     }
+}
 
-    glfwWindowHint(GLFW_SAMPLES, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+static void SetupWindow() {
+    glfwWindowHint(GLFW_SAMPLES, 4); // Smoothing x4
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // Version control
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Open a window and create its OpenGL context
-    window = glfwCreateWindow( 1024, 768, "Tutorial 02 - Red triangle", NULL, NULL);
+    window = glfwCreateWindow(WindowLength, WindowWidth, "Task 1 two triangles", NULL, NULL);
     if (window == NULL) {
-        fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
+        fprintf(stderr,
+                "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible.\n");
         getchar();
         glfwTerminate();
-        return -1;
+        exit(-1);
     }
 
     glfwMakeContextCurrent(window);
+}
 
-
-
-
+static void InitializeGLEW() {
     // Initialize GLEW
-    glewExperimental = true; // Needed for core profile
+    glewExperimental = true; // For core profile
     if (glewInit() != GLEW_OK) {
         fprintf(stderr, "Failed to initialize GLEW\n");
         getchar();
         glfwTerminate();
-        return -1;
+        exit(-1);
     }
+}
 
-    // Ensure we can capture the escape key being pressed below
+static void SetKeyBinds() {
+    // Ensure we can capture the escape key being pressed
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+}
 
-    // Dark blue background
-//    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+static void SetBackground() {
+    glClearColor(0.921f, 0.929f, 0.956f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+static void EnableBlending() {
+    glEnable(GL_BLEND);
+    // Specifies how to compute RGB and alpha
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+int main(void) {
+    InitializeGLFW();
+
+    SetupWindow();
+
+    InitializeGLEW();
+
+    SetKeyBinds();
+
+    SetBackground();
+
+    EnableBlending();
 
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
     // Create and compile our GLSL program from the shaders
-    GLuint programID_1 = LoadShaders( "SimpleVertexShader.vertexshader", "SimpleFragmentShaderTriangle_1.fragmentshader" );
-
-
-    static const GLfloat g_vertex_buffer_data_1[] = {
+    GLuint programID_1 = LoadShaders("SimpleVertexShader.vertexshader",
+                                     "SimpleFragmentShaderTriangle_1.fragmentshader");
+    GLuint programID_2 = LoadShaders("SimpleVertexShader.vertexshader",
+                                     "SimpleFragmentShaderTriangle_2.fragmentshader");
+    // Coordinates
+    static const GLfloat g_vertex_buffer_data[] = {
             0.0f, 0.9f, 0.0f,
             -0.75f, -0.5f, 0.0f,
-            0.75f,  -0.5f, 0.0f,
-    };
+            0.75f, -0.5f, 0.0f,
 
-    GLuint vertexbuffer_1;
-    glGenBuffers(1, &vertexbuffer_1);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_1);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data_1), g_vertex_buffer_data_1, GL_STATIC_DRAW);
-
-    GLuint programID_2 = LoadShaders( "SimpleVertexShader.vertexshader", "SimpleFragmentShaderTriangle_2.fragmentshader" );
-
-    static const GLfloat g_vertex_buffer_data_2[] = {
             0.0f, -0.9f, 0.0f,
             -0.75f, 0.5f, 0.0f,
-            0.75f,  0.5f, 0.0f,
+            0.75f, 0.5f, 0.0f,
     };
 
-    GLuint vertexbuffer_2;
-    glGenBuffers(1, &vertexbuffer_2);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_2);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data_2), g_vertex_buffer_data_2, GL_STATIC_DRAW);
+    GLuint vertexbuffer;
+    glGenBuffers(1, &vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-    // my background
-//    glClearColor(0.956f, 0.949f, 0.643f, 1.0f);
-        glClearColor(0.921f, 0.929f, 0.956f, 1.0f);
-//    glClear(GL_COLOR_BUFFER_BIT);
-
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-    glBlendEquation(GL_FUNC_ADD);
-
-    do{
-
+    do {
         // Clear the screen
-        glClear( GL_COLOR_BUFFER_BIT );
-
-        // Use our shader
-        glUseProgram(programID_1);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         // 1rst attribute buffer : vertices
         glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_1);
-        glVertexAttribPointer(
-                0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-                3,                  // size
-                GL_FLOAT,           // type
-                GL_FALSE,           // normalized?
-                0,                  // stride
-                (void*)0            // array buffer offset
-        );
+        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
-        // Draw the triangle !
-        glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
+        glUseProgram(programID_1);
+        // Draw the first triangle
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glUseProgram(programID_2);
-
-
-
-        // 1rst attribute buffer : vertices
-        glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer_2);
-        glVertexAttribPointer(
-                0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-                3,                  // size
-                GL_FLOAT,           // type
-                GL_FALSE,           // normalized?
-                0,                  // stride
-                (void*)0            // array buffer offset
-        );
-
-        // Draw the triangle !
-        glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
+        // Draw the second triangle
+        glDrawArrays(GL_TRIANGLES, 3, 6);
 
         glDisableVertexAttribArray(0);
 
@@ -148,16 +138,13 @@ int main(void) {
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-    } // Check if the ESC key was pressed or the window was closed
-    while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-           glfwWindowShouldClose(window) == 0 );
+    } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+             glfwWindowShouldClose(window) == 0);
 
     // Cleanup VBO
-    glDeleteBuffers(1, &vertexbuffer_1);
+    glDeleteBuffers(1, &vertexbuffer);
     glDeleteVertexArrays(1, &VertexArrayID);
     glDeleteProgram(programID_1);
-
-    glDeleteBuffers(1, &vertexbuffer_2);
     glDeleteProgram(programID_2);
 
     // Close OpenGL window and terminate GLFW
@@ -165,4 +152,5 @@ int main(void) {
 
     return 0;
 }
+
 
