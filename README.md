@@ -6,4 +6,4 @@ MIPT 3D visualization course, semester 6 - 2022-/-Spring
 **Theoretical tasks**
 -----------------------------------------------------------------
 
-Theory solutions [a relative link](TheoreticalTasks.pdf)
+Theory solutions [a relative link](TheoreticalTasks.ipynb)
