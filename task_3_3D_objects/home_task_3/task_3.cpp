@@ -75,6 +75,11 @@ static void SetBackground() {
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
+static void EnableDepthTest() {
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+}
+
 static void EnableBlending() {
     glEnable(GL_BLEND);
     // Specifies how to compute RGB and alpha
@@ -92,10 +97,9 @@ int main(void) {
 
     SetBackground();
 
-    EnableBlending();
+    EnableDepthTest();
 
-//    glEnable(GL_DEPTH_TEST);
-//    glDepthFunc(GL_LESS);
+    EnableBlending();
 
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
@@ -193,7 +197,10 @@ int main(void) {
         MVP = Projection * View * Model;
 
         // Clear the screen
-        glClear(GL_COLOR_BUFFER_BIT);
+//        glClear(GL_COLOR_BUFFER_BIT);
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
         glUseProgram(programID_1);
         glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
@@ -231,3 +238,4 @@ int main(void) {
 
     return 0;
 }
+
